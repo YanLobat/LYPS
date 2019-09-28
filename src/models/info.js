@@ -1,12 +1,39 @@
 import {createStore, createEffect, createEvent} from 'effector';
 
-export const $info = createStore({});
+export const sex = createStore('')
+export const description = createStore('')
+export const photo = createStore('')
+export const job = createStore('')
+export const education = createStore('')
+
+const mergedStore = {
+  sex,
+  description,
+  photo,
+  job,
+  education
+};
 
 export const changeSex = createEvent();
 export const changeDescription = createEvent();
+export const changePhoto = createEvent();
 export const changeJob = createEvent();
 export const changeEducation = createEvent();
 
+
+export const updateInfo = createEffect({
+  async handler({newInfo}) {
+    const bin = '1ehxc1';
+    const res = await fetch('https://api.myjson.com/bins/' + bin, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newInfo),
+    })
+    return res.json()
+  },
+})
 export const loadInfo = createEffect({
   async handler() {
     const bin = '1ehxc1';
@@ -15,9 +42,22 @@ export const loadInfo = createEffect({
   }
 });
 
-$info.on(loadInfo.done, (_, {result}) => result);
+function updateByResponse(effects, shape) {
+  for (const key in shape) {
+    shape[key].on(effect.done, (_, {result}) => result[key])
+  }
+}
 
-$info.on(changeSex, (info, sex) => Object.assign({}, info, {sex}));
-$info.on(changeDescription, (info, description) => Object.assign({}, info, {description}));
-$info.on(changeJob, (info, job) => Object.assign({}, info, {job}));
-$info.on(changeEducation, (info, education) => Object.assign({}, info, {education}));
+function multiForward(storeEventPairs) {
+  storeEventPairs.forEach((storeEventPair) => {
+    const [event, proxyStore] = storeEventPair;
+    forward({
+      from: event,
+      to: proxyStore,
+    });
+  }
+}
+
+multiForward([[sex,changeSex], [description, changeDescription], [photo, changePhoto], [job, changeJob], [education, changeEducation]]);
+updateByResponse(loadInfo, mergedStore);
+updateByResponse(updateInfo, mergedStore);
