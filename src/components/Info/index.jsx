@@ -2,10 +2,10 @@ import React, {useEffect} from 'react';
 import {createComponent} from 'effector-react';
 
 import {Carousel} from '../../lib/Carousel';
-import {$info, loadInfo} from '../../models/info';
+import {info, loadInfo} from '../../models/info';
 import {route} from '../../models/router';
 
-export const Info = createComponent($info, (props, info) => {
+export const Info = createComponent(info, (props, info) => {
   useEffect(() => {
     loadInfo();
   }, []);

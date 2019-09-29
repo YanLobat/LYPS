@@ -1,12 +1,12 @@
-import {createStore, createEffect, createEvent} from 'effector';
+import {createStore, createEffect, createEvent, forward} from 'effector';
 
-export const sex = createStore('')
-export const description = createStore('')
-export const photo = createStore('')
-export const job = createStore('')
-export const education = createStore('')
+export const sex = createStore('');
+export const description = createStore('');
+export const photo = createStore('');
+export const job = createStore('');
+export const education = createStore('');
 
-const mergedStore = {
+export const info = {
   sex,
   description,
   photo,
@@ -33,7 +33,8 @@ export const updateInfo = createEffect({
     })
     return res.json()
   },
-})
+});
+
 export const loadInfo = createEffect({
   async handler() {
     const bin = '1ehxc1';
@@ -42,7 +43,7 @@ export const loadInfo = createEffect({
   }
 });
 
-function updateByResponse(effects, shape) {
+function updateByResponse(effect, shape) {
   for (const key in shape) {
     shape[key].on(effect.done, (_, {result}) => result[key])
   }
@@ -51,13 +52,35 @@ function updateByResponse(effects, shape) {
 function multiForward(storeEventPairs) {
   storeEventPairs.forEach((storeEventPair) => {
     const [event, proxyStore] = storeEventPair;
+    console.log(event, proxyStore);
     forward({
       from: event,
       to: proxyStore,
     });
-  }
+  });
 }
 
-multiForward([[sex,changeSex], [description, changeDescription], [photo, changePhoto], [job, changeJob], [education, changeEducation]]);
-updateByResponse(loadInfo, mergedStore);
-updateByResponse(updateInfo, mergedStore);
+// multiForward([[sex,changeSex], [description, changeDescription], [photo, changePhoto], [job, changeJob], [education, changeEducation]]);
+updateByResponse(loadInfo, info);
+updateByResponse(updateInfo, info);
+
+forward({
+  from: changeDescription,
+  to: description,
+});
+forward({
+  from: changeSex,
+  to: sex,
+});
+forward({
+  from: changePhoto,
+  to: photo,
+});
+forward({
+  from: changeJob,
+  to: job,
+});
+forward({
+  from: changeEducation,
+  to: education,
+});

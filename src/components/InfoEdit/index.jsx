@@ -1,28 +1,36 @@
 import React, {useEffect} from 'React';
-import {createComponent} from 'effector-react';
+import {createComponent, useStore} from 'effector-react';
 
 import {Carousel} from '../../lib/Carousel';
-import {$info, loadInfo, changeSex, changeJob, changeEducation, changeDescription} from '../../models/info';
+import {info, loadInfo, changePhoto, changeSex, changeJob, changeEducation, changeDescription} from '../../models/info';
 import {route} from '../../models/router';
 
-export const InfoEdit = createComponent($info, (props, info) => {
+const InfoItem = ({label, value, changeEvent, isTextArea = false}) => {
+  const state = useStore(value);
+  return (
+    <React.Fragment>
+      <p>{label}</p>
+      {
+        isTextArea
+        ? <textarea value={state} onChange={(event) => changeEvent(event.target.value)}></textarea>
+        : <input type='text' value={state} onChange={(event) => changeEvent(event.target.value)}/>
+      }
+    </React.Fragment>
+  );
+};
+
+export const InfoEdit = (props) => {
   //TODO понять почему если здесь использовать useEffect получаю Invariant Violation: Invalid hook call
-  if (Object.keys(info).length === 0) {
-    loadInfo();
-  };
+  loadInfo();
   const {name, photo, description, sex, job, education} = info;
   return (
     <article style={{marginTop: '20px'}}>
       <Carousel url={photo}/>
-      <p>Sex:</p>
-      <input type='text'value={sex} onChange={(event) => changeSex(event.target.value)}/>
-      <p>Job:</p>
-      <input type='text'value={job} onChange={(event) => changeJob(event.target.value)}/>
-      <p>Education</p>
-      <input type='text'value={education} onChange={(event) => changeEducation(event.target.value)}/>
-      <p>About</p>
-      <textarea value={description} onChange={(event) => changeDescription(event.target.value)}></textarea>
+      <InfoItem value={sex} label='Sex:' changeEvent={changeSex}/>
+      <InfoItem value={job} label='Job:' changeEvent={changeJob}/>
+      <InfoItem value={education} label='Education:' changeEvent={changeEducation}/>
+      <InfoItem value={description} label='About:' changeEvent={changeDescription} isTextArea/>
       <button onClick={() => route('/profile')}>Save</button>
     </article>
   );
-});
+};
